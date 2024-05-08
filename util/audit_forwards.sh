@@ -1,12 +1,12 @@
-#!/bin/sh
-#Script para auditoria de todos os encaminhamentos configurados nas contas do Zimbra
-#Referencia: https://wiki.zimbra.com/wiki/Obtain_all_the_forwards_per_each_account
+#!/bin/bash
+# Script to audit all forwarding configurations set up in Zimbra accounts
+# Reference: https://wiki.zimbra.com/wiki/Obtain_all_the_forwards_per_each_account
 
-for account in `zmprov -l gaa`; do
-	forwardingaddress=`zmprov ga $account |grep 'zimbraPrefMailForwardingAddress' |sed 's/zimbraPrefMailForwardingAddress: //'`
-	if [ "$forwardingaddress" != "" ]; then
-		echo "$account esta com encaminhamento para $forwardingaddress"
-	else
-		forwardingaddress=""
-fi
+for account in $(zmprov -l gaa); do
+    forwardingaddress=$(zmprov ga $account | grep 'zimbraPrefMailForwardingAddress' | sed 's/zimbraPrefMailForwardingAddress: //')
+    if [ -n "$forwardingaddress" ]; then
+        echo "$account is forwarding to $forwardingaddress"
+    else
+        forwardingaddress=""
+    fi
 done

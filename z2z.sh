@@ -1,51 +1,51 @@
 #!/bin/bash
-###   Z2Z - Mantido por BKTECH <http://www.bktech.com.br>                         ###
+###   Z2Z - Maintained by BKTECH <http://www.bktech.com.br>                     ###
 ###   Copyright (C) 2016  Fabio Soares Schmidt <fabio@respirandolinux.com.br>     ###
-###   PARA INFORMACOES SOBRE A FERRAMENTA, FAVOR LER OS ARQUIVOS README E INSTALL ###
+###   FOR INFORMATION ABOUT THE TOOL, PLEASE READ THE README AND INSTALL FILES ###
 
-###   VERSAO 1.0.2
+###   VERSION 1.0.2
 
-#CARREGA FUNCOES UTILIZADAS PELO SCRIPT
+# LOAD FUNCTIONS USED BY THE SCRIPT
 . func.sh
  
-#INICIAR Z2Z
+# START Z2Z
 clear
 cat banner.txt
 echo ""
 #
 
-#CONFIRMA SE ESTA SENDO EXECUTADO COM O USUARIO ZIMBRA
+# CONFIRM IF IT'S BEING EXECUTED WITH THE ZIMBRA USER
 Run_as_Zimbra
 separator_char
 
-#CONFIRMA SE O USUARIO DESEJA CONTINUAR COM A EXECUCAO
+# CONFIRM IF THE USER WANTS TO CONTINUE WITH THE EXECUTION
 test_exec
 separator_char
 
-#TESTES PARA EXECUCAO DO UTILITARIO
+# TESTS FOR UTILITY EXECUTION
 
-#COMANDOS NECESSARIOS
+# NECESSARY COMMANDS
 declare -a COMANDOS=('ldapsearch' 'zmmailbox' 'zmshutil' 'zmprov');
 
 Check_Command
 separator_char
 
-#VALIDA AMBIENTE SINGLE SERVER OU SINGLE MAILBOX
+# VALIDATE SINGLE SERVER OR SINGLE MAILBOX ENVIRONMENT
 Check_Maibox
 separator_char
 
-#DEFININDO VARIAVEIS DE AMBIENTE DO ZIMBRA
+# SETTING ZIMBRA ENVIRONMENT VARIABLES
 source ~/bin/zmshutil
 zmsetvars
 
 
-#DEFININDO NOME DO SERVIDOR COM VARIAVEL DO AMBIENTE
+# SETTING SERVER NAME WITH ENVIRONMENT VARIABLE
 ZIMBRA_HOSTNAME=$zimbra_server_hostname
-#DEFININDO USUARIO PARA BIND NO LDAP DO ZIMBRA COM VARIAVEL DO AMBIENE
+# SETTING USER TO BIND TO ZIMBRA LDAP WITH ENVIRONMENT VARIABLE
 ZIMBRA_BINDDN=$zimbra_ldap_userdn
 
 
-####DIRETORIOS
+#### DIRECTORIES
 
 DIRETORIO=$WORKDIR
 Check_Directory
@@ -54,27 +54,27 @@ DIRETORIO="`pwd`/skell"
 Check_Directory
 separator_char
 DESTINO=$WORKDIR
-mkdir $WORKDIR/alias #Cria diretorio temporario para exportar os nomes alternativos
+mkdir $WORKDIR/alias # Create temporary directory to export aliases
 
-#PODE CONTINUAR
+# CAN CONTINUE
 
 
- #EXPORTANDO CLASSES DE SERVICO
- $NORMAL_TEXT "EXPORTANDO CLASSES DE SERVICO"
+ # EXPORTING CLASS OF SERVICE
+ $NORMAL_TEXT "EXPORTING CLASS OF SERVICE"
  separator_char
  ldapsearch -x -H ldap://$ZIMBRA_HOSTNAME -D $ZIMBRA_BINDDN -w $zimbra_ldap_password -b '' -LLL "(objectclass=zimbraCOS)" > $DESTINO/COS.ldif
- $INFO_TEXT "CLASSES DE SERVICO EXPORTADAS COM SUCESSO: $DESTINO/COS.ldif"
+ $INFO_TEXT "CLASS OF SERVICE EXPORTED SUCCESSFULLY: $DESTINO/COS.ldif"
  separator_char
  
- #EXPORTANDO CONTAS - DESCONSIDERANDO CONTAS DE SERVICO DO ZIMBRA (zimbraIsSystemResource=TRUE)
- $NORMAL_TEXT  "EXPORTANDO CONTAS"
+ # EXPORTING ACCOUNTS - DISREGARDING ZIMBRA SERVICE ACCOUNTS (zimbraIsSystemResource=TRUE)
+ $NORMAL_TEXT  "EXPORTING ACCOUNTS"
  separator_char
  ldapsearch -x -H ldap://$ZIMBRA_HOSTNAME -D $ZIMBRA_BINDDN -w $zimbra_ldap_password -b '' -LLL '(&(!(zimbraIsSystemResource=TRUE))(objectClass=zimbraAccount))' > $DESTINO/CONTAS.ldif
- $INFO_TEXT "CONTAS EXPORTADAS COM SUCESSO: $DESTINO/CONTAS.ldif"
+ $INFO_TEXT "ACCOUNTS EXPORTED SUCCESSFULLY: $DESTINO/CONTAS.ldif"
  separator_char
  
- #EXPORTANDO NOMES ALTERNATIVOS
- $NORMAL_TEXT  "EXPORTANDO NOMES ALTERNATIVOS"
+ # EXPORTING ALTERNATE NAMES
+ $NORMAL_TEXT  "EXPORTING ALTERNATE NAMES"
  separator_char
 
  ldapsearch -x -H ldap://$ZIMBRA_HOSTNAME -D $ZIMBRA_BINDDN -w $zimbra_ldap_password  -b '' -LLL '(&(!(uid=root))(!(uid=postmaster))(objectclass=zimbraAlias))' uid | grep ^uid | awk '{print $2}' > $DESTINO/lista_contas.ldif
@@ -85,45 +85,45 @@ mkdir $WORKDIR/alias #Cria diretorio temporario para exportar os nomes alternati
 		  	cat $DESTINO/alias/*.ldif > $DESTINO/APELIDOS.ldif
 			done 
 
-   $INFO_TEXT "NOMES ALTENATIVOS EXPORTADOS COM SUCESSO: $DESTINO/APELIDOS.ldif"
+   $INFO_TEXT "ALTERNATE NAMES EXPORTED SUCCESSFULLY: $DESTINO/APELIDOS.ldif"
    separator_char
 
-#EXPORTANDO LISTAS DE DISTRIBUICAO
-   $NORMAL_TEXT  "EXPORTANDO LISTAS DE DISTRIBUICAO"
+# EXPORTING DISTRIBUTION LISTS
+   $NORMAL_TEXT  "EXPORTING DISTRIBUTION LISTS"
    separator_char
 ldapsearch -x -H ldap://$ZIMBRA_HOSTNAME -D $ZIMBRA_BINDDN -w $zimbra_ldap_password -b '' -LLL "(|(objectclass=zimbraGroup)(objectclass=zimbraDistributionList))" > $DESTINO/LISTAS.ldif
-   $INFO_TEXT "LISTAS DE DISTRIBUICAO EXPORTADAS COM SUCESSO: $DESTINO/LISTAS.ldif"
+   $INFO_TEXT "DISTRIBUTION LISTS EXPORTED SUCCESSFULLY: $DESTINO/LISTAS.ldif"
    separator_char
 
-#LIMPA OS ARQUIVOS TEMPORARIOS CRIADOS NO DIRETORIO EXPORT
+# CLEAR TEMPORARY FILES CREATED IN THE EXPORT DIRECTORY
 Clear_Workdir
 
-#COPIA SCRIPT DE IMPORTACAO E BANNER SIMPLES 
+# COPY IMPORT SCRIPT AND SIMPLE BANNER
 cp skell/importar_ldap.sh export/
 cp skell/banner_simples.txt export/
 chmod +x export/importar_ldap.sh
 
-#INTERATIVIDADE: ALTERAR HOSTNAME DO SERVIDOR
+# INTERACTIVITY: CHANGE SERVER HOSTNAME
 Replace_Hostname
 separator_char
 
-#INTERATIVIDADE: EXPORTAR (RELACAO) DE CAIXAS POSTAIS
+# INTERACTIVITY: EXPORT MAILBOXES (RELATIONSHIP)
 
 export_Mailboxes
 separator_char
 
 Export_Dest
 
-#EXPORTANDO CAIXA POSTAL
+# EXPORT MAILBOX
 execute_Export_Full
 separator_char
 
-#EXPORTANDO LIXEIRA
+# EXPORT TRASH
 execute_Export_Trash
 separator_char
 
-#EXPORTANDO SPAM
+# EXPORT JUNK
 execute_Export_Junk
 separator_char
 
-#FIM
+# END
