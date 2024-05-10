@@ -1,5 +1,5 @@
 #!/bin/bash
-###   Z2Z - Maintained by BKTECH <http://www.bktech.com.br>                      ###
+###   Z2Z - Maintained by BKTECH <https://www.bktech.com.br>                     ###
 ###   Copyright (C) 2016  Fabio Soares Schmidt <fabio@respirandolinux.com.br>    ###
 ###   FOR INFORMATION ABOUT THE TOOL, PLEASE READ THE README AND INSTALL FILES   ###
 
@@ -12,7 +12,6 @@ NORMAL_TEXT="printf \e[1;34m%-6s\e[m\n" # Blue
 ERROR_TEXT="printf \e[1;31m%s\e[0m\n"  # Red
 INFO_TEXT="printf \e[1;33m%s\e[0m\n"   # Yellow
 CHOICE_TEXT="printf \e[1;32m%s\e[0m\n" # Green
-NO_COLOUR="printf \e[0m"                # White
 DEFAULTCOS_DN="cn=default,cn=cos,cn=zimbra"
 DEFAULTEXTERNALCOS_DN="cn=defaultExternal,cn=cos,cn=zimbra"
 SERVER_HOSTNAME=$zimbra_server_hostname
@@ -26,7 +25,7 @@ if [ "$(whoami)" != "zimbra" ]; then
 fi
 
 # NECESSARY FILES FOR EXECUTION
-declare -a ARQUIVOS_IMPORT=('CONTAS.ldif' 'COS.ldif');
+declare -a ARQUIVOS_IMPORT=('ACCOUNTS.ldif' 'COS.ldif');
 
 for i in "${ARQUIVOS_IMPORT[@]}"; do
     if [ ! -r $i ]; then
@@ -38,7 +37,7 @@ for i in "${ARQUIVOS_IMPORT[@]}"; do
 done
 
 # VERIFYING IF THE HOSTNAME IN THE ENTRIES MATCHES THE SERVER HOSTNAME
-LDIF_HOSTNAME=$(grep zimbraMailHost CONTAS.ldif | uniq | awk '{print $2}')
+LDIF_HOSTNAME=$(grep zimbraMailHost ACCOUNTS.ldif | uniq | awk '{print $2}')
 if [ "$SERVER_HOSTNAME" != "$LDIF_HOSTNAME" ]; then
     $ERROR_TEXT "ERROR: The server hostname does not match the hostname in the import files"
     $INFO_TEXT "Server hostname: $SERVER_HOSTNAME"
@@ -47,9 +46,9 @@ if [ "$SERVER_HOSTNAME" != "$LDIF_HOSTNAME" ]; then
 fi
 
 # NECESSARY COMMANDS FOR EXECUTION
-declare -a COMANDOS=('ldapsearch' 'zmhostname' 'zmshutil' 'zmmailbox');
+declare -a COMMANDS=('ldapsearch' 'zmhostname' 'zmshutil' 'zmmailbox');
 
-for i in "${COMANDOS[@]}"; do
+for i in "${COMMANDS[@]}"; do
     type $i >/dev/null 2>/dev/null
     if [ $? != 0 ]; then
         $ERROR_TEXT "ERROR: Command $i not found, aborting execution."
@@ -106,10 +105,10 @@ ldapdelete -r -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -c -w 
 $INFO_TEXT "Importing COS"
 ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f COS.ldif &>> $SESSION_LOG
 $INFO_TEXT "Importing accounts"
-ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f CONTAS.ldif &>> $SESSION_LOG
+ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f ACCOUNTS.ldif &>> $SESSION_LOG
 $INFO_TEXT "Importing alternative names"
-ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f APELIDOS.ldif &>> $SESSION_LOG
+ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f ALTNAMES.ldif &>> $SESSION_LOG
 $INFO_TEXT "Importing distribution lists"
-ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f LISTAS.ldif &>> $SESSION_LOG
+ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f LISTS.ldif &>> $SESSION_LOG
 
 #
