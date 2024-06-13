@@ -25,9 +25,9 @@ if [ "$(whoami)" != "zimbra" ]; then
 fi
 
 # NECESSARY FILES FOR EXECUTION
-declare -a ARQUIVOS_IMPORT=('ACCOUNTS.ldif' 'COS.ldif');
+declare -a FILES_IMPORT=('ACCOUNTS.ldif' 'COS.ldif', 'ALIASES.ldif', 'LISTS.ldif');
 
-for i in "${ARQUIVOS_IMPORT[@]}"; do
+for i in "${FILES_IMPORT[@]}"; do
     if [ ! -r $i ]; then
         $ERROR_TEXT  "ERROR: File $i not found or does not have read permission."
         exit 1
@@ -107,7 +107,7 @@ ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbr
 $INFO_TEXT "Importing accounts"
 ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f ACCOUNTS.ldif &>> $SESSION_LOG
 $INFO_TEXT "Importing alternative names"
-ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f ALTNAMES.ldif &>> $SESSION_LOG
+ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f ALIASES.ldif &>> $SESSION_LOG
 $INFO_TEXT "Importing distribution lists"
 ldapadd -c -x -H ldap://$zimbra_server_hostname -D $zimbra_ldap_userdn -w $zimbra_ldap_password -f LISTS.ldif &>> $SESSION_LOG
 

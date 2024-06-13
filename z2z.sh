@@ -73,20 +73,21 @@ mkdir $WORKDIR/alias # Create temporary directory to export aliases
  $INFO_TEXT "ACCOUNTS EXPORTED SUCCESSFULLY: $DESTINATION/ACCOUNTS.ldif"
  separator_char
  
- # EXPORTING ALTERNATE NAMES
- $NORMAL_TEXT  "EXPORTING ALTERNATE NAMES"
+ # EXPORTING ALIASES
+ $NORMAL_TEXT  "EXPORTING ALIASES"
  separator_char
 
- ldapsearch -x -H ldap://$ZIMBRA_HOSTNAME -D $ZIMBRA_BINDDN -w $zimbra_ldap_password  -b '' -LLL '(&(!(uid=root))(!(uid=postmaster))(objectclass=zimbraAlias))' uid | grep ^uid | awk '{print $2}' > $DESTINATION/lista_contas.ldif
+ ldapsearch -x -H ldap://$ZIMBRA_HOSTNAME -D $ZIMBRA_BINDDN -w $zimbra_ldap_password  -b '' -LLL '(&(!(uid=root))(!(uid=postmaster))(objectclass=zimbraAlias))' uid | grep ^uid | awk '{print $2}' > $DESTINATION/ALIASES.tmp
 
- for MAIL in $(cat $DESTINATION/lista_contas.ldif);
+ for MAIL in $(cat $DESTINATION/ALIASES.tmp);
  	do 
 	      ldapsearch -x -H ldap://$ZIMBRA_HOSTNAME -D $ZIMBRA_BINDDN -w $zimbra_ldap_password -b '' -LLL "(&(uid=$MAIL)(objectclass=zimbraAlias))" > $DESTINATION/alias/$MAIL.ldif
-		  	cat $DESTINATION/alias/*.ldif > $DESTINATION/ALTNAMES.ldif
-			done 
+		  	cat $DESTINATION/alias/*.ldif >> $DESTINATION/ALIASES.ldif
+      done
 
-   $INFO_TEXT "ALTERNATE NAMES EXPORTED SUCCESSFULLY: $DESTINATION/ALTNAMES.ldif"
+   $INFO_TEXT "ALIASES EXPORTED SUCCESSFULLY: $DESTINATION/ALIASES.ldif"
    separator_char
+ [ ! -f $DESTINATION/ALIASES.ldif ] && touch $DESTINATION/ALIASES.ldif
 
 # EXPORTING DISTRIBUTION LISTS
    $NORMAL_TEXT  "EXPORTING DISTRIBUTION LISTS"

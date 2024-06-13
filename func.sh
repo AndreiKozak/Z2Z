@@ -213,7 +213,7 @@ done
 
 Clear_Workdir()
 {
-rm -f "$WORKDIR/account_list.ldif"
+rm -f "$WORKDIR/ALIASES.tmp"
 rm -fr "$WORKDIR/alias"
 }
 
